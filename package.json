@@ -1,0 +1,45 @@
+{
+  "name": "@McL/McL-Axios-Kit",
+  "version": "0.0.1",
+  "description":"McL에서 Axios를 활용해 API를 보다 효율적이고 깔끔하게 활용할 수 있도록 구현된 Kit",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig-esm.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+     "McL"
+  ],
+  "author": "",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/Dark1004-K/McL-Axios-Kit#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dark1004-K/McL-Axios-Kit#readme",
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@types/node": "^22.13.10",
+    "typescript": "~5.7.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
