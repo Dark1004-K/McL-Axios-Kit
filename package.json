@@ -1,6 +1,6 @@
 {
-  "name": "@Dark1004-K/McL-Axios-Kit",
-  "version": "0.0.1",
+  "name": "@dark1004-k/mcl-axios-kit",
+  "version": "0.0.2",
   "description": "McL에서 Axios를 활용해 API를 보다 효율적이고 깔끔하게 활용할 수 있도록 구현된 Kit",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -35,10 +35,11 @@
     "typescript": "^5.9.3"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://npm.pkg.github.com",
+    "@dark1004-k:registry": "https://npm.pkg.github.com"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Dark1004-K/McL-Axios-Kit.git"
+    "url": "git+https://github.com/dark1004-k/mcl-axios-kit.git"
   }
 }
