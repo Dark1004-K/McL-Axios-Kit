@@ -35,11 +35,11 @@
     "typescript": "^5.9.3"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
+    "access": "public",
+    "registry": "https://registry.npmjs.org",
     "@dark1004-k:registry": "https://npm.pkg.github.com"
   },
   "repository": {
-    "access": "public",
     "type": "git",
     "url": "git+https://github.com/dark1004-k/mcl-axios-kit.git"
   }
