@@ -1,5 +1,5 @@
 {
-  "name": "@idea_mcl/mcl-axios-kit",
+  "name": "@Dark1004-K/McL-Axios-Kit",
   "version": "0.0.1",
   "description": "McL에서 Axios를 활용해 API를 보다 효율적이고 깔끔하게 활용할 수 있도록 구현된 Kit",
   "main": "dist/index.js",
@@ -23,10 +23,6 @@
   ],
   "author": "IDEa Team",
   "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Dark1004-K/McL-Axios-Kit.git"
-  },
   "dependencies": {
     "reflect-metadata": "^0.2.2"
   },
@@ -39,6 +35,10 @@
     "typescript": "^5.9.3"
   },
   "publishConfig": {
-    "access": "public"
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dark1004-K/McL-Axios-Kit.git"
   }
 }
