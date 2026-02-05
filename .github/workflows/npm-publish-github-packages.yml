@@ -40,7 +40,7 @@ jobs:
       #   run: npm test
 
       - name: Publish to npm
-        run: npm publish
+        run: npm publish --access public
         # package.json에 "publishConfig": { "access": "public" }이 설정되어 있으므로,
         # 'npm publish' 명령어만으로도 공개 패키지로 발행됩니다.
         # 만약 해당 설정이 없다면 'npm publish --access public'을 사용해야 합니다.
