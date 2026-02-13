@@ -7,6 +7,7 @@ export const RESPONSE_TYPE_KEY = Symbol("mc:responseType");
 export const PATH_PARAMS_KEY = Symbol("mc:pathParams");
 export const SUCCESS_HANDLER_KEY = Symbol("mc:successHandler");
 export const ERROR_HANDLER_KEY = Symbol("mc:errorHandler");
+export const FORMDATA_KEY = Symbol("mc:formdata");
 
 const McAxiosAnnotations = {
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -29,6 +30,11 @@ const McAxiosAnnotations = {
 	},
 
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	MULTIPART: (url: string, type: new (res: any) => any) => {
+		return createDecorator("MULTIPART", url, type);
+	},
+
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	PATCH: (url: string, type: new (res: any) => any) => {
 		return createDecorator("PATCH", url, type);
 	},
@@ -36,6 +42,11 @@ const McAxiosAnnotations = {
 	// biome-ignore lint/complexity/noBannedTypes: <explanation>
 	Request: (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
 		Reflect.defineMetadata(REQUEST_KEY, parameterIndex, target, propertyKey);
+	},
+
+	// biome-ignore lint/complexity/noBannedTypes: <explanation>
+	FormData: (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
+		Reflect.defineMetadata(FORMDATA_KEY, parameterIndex, target, propertyKey);
 	},
 
 	Path: (name: string) => {
