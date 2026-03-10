@@ -1,13 +1,14 @@
 import type McAxios from "./McAxios";
 
-export const createMcAxios = <T extends McAxios>(api: T): T => {
-	McAxiosManager.add(api);
-	return api;
-};
 export default class McAxiosManager {
 	private static _axios: McAxios[] = [];
 
-	private constructor() {}
+	private constructor() { }
+	
+	public static createMcAxios<T extends McAxios>(api: T): T {
+		McAxiosManager.add(api);
+		return api;
+	};
 
 	public static set(servers: McAxios[]) {
 		McAxiosManager.clear();
