@@ -25,9 +25,10 @@ export default abstract class McAxios {
 			const successHandler = Reflect.getMetadata(SUCCESS_HANDLER_KEY, proto, name);
 			const errorHandler = Reflect.getMetadata(ERROR_HANDLER_KEY, proto, name);
 			const requestBody = Reflect.getMetadata(REQUEST_KEY, proto, name);
+			const headerParam = Reflect.getMetadata(HEADER_KEY, proto, name);
 			const responseType = Reflect.getMetadata(RESPONSE_TYPE_KEY, proto, name);
 			const formData = Reflect.getMetadata(FORMDATA_KEY, proto, name);
-			const headerParam = Reflect.getMetadata(HEADER_KEY, proto, name);
+			
 
 			const pathParams: { [key: string]: number } = Reflect.getMetadata(PATH_PARAMS_KEY, proto, name) || {};
 

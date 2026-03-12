@@ -50,6 +50,7 @@ const McAxiosAnnotations = {
 		Reflect.defineMetadata(FORMDATA_KEY, parameterIndex, target, propertyKey);
 	},
 
+	// biome-ignore lint/complexity/noBannedTypes: <explanation>
 	Header: (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
 		Reflect.defineMetadata(HEADER_KEY, parameterIndex, target, propertyKey);
 	},
