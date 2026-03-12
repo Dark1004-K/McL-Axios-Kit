@@ -25,12 +25,13 @@ export default abstract class McAxios {
 			const successHandler = Reflect.getMetadata(SUCCESS_HANDLER_KEY, proto, name);
 			const errorHandler = Reflect.getMetadata(ERROR_HANDLER_KEY, proto, name);
 			const requestBody = Reflect.getMetadata(REQUEST_KEY, proto, name);
-			const headerParam = Reflect.getMetadata(HEADER_KEY, proto, name);
+			
 			const responseType = Reflect.getMetadata(RESPONSE_TYPE_KEY, proto, name);
 			const formData = Reflect.getMetadata(FORMDATA_KEY, proto, name);
 			
 
 			const pathParams: { [key: string]: number } = Reflect.getMetadata(PATH_PARAMS_KEY, proto, name) || {};
+			const headerParam: { [key: string]: number } = Reflect.getMetadata(HEADER_KEY, proto, name) || {};
 
 			Object.defineProperty(this, name, {
 				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -76,9 +77,10 @@ export default abstract class McAxios {
 					console.log(`param -> ${name} :: ${data}`);
 
 					const headers: AxiosHeaders = this.header() ?? new AxiosHeaders();
-					const header = headerParam !== undefined ? args[headerParam] : undefined;
-
-					headers.set(headerParam, header);
+					for (const [key, index] of Object.entries(headerParam)) {
+						const value = encodeURIComponent(args[index]);
+						headers.set(key, value);
+					}
 
 					try {
 						const response = await this._axios
