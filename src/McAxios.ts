@@ -1,6 +1,6 @@
-import axios, { type AxiosHeaders, type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from "axios";
+import axios, { AxiosHeaders, type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from "axios";
 import McRequest from "./McRequest";
-import McAxiosAnnotations, { ERROR_HANDLER_KEY, METHOD_META_KEY, PATH_PARAMS_KEY, REQUEST_KEY, RESPONSE_TYPE_KEY, SUCCESS_HANDLER_KEY, FORMDATA_KEY } from "./McAxiosAnnotations";
+import McAxiosAnnotations, { ERROR_HANDLER_KEY, METHOD_META_KEY, PATH_PARAMS_KEY, REQUEST_KEY, RESPONSE_TYPE_KEY, SUCCESS_HANDLER_KEY, FORMDATA_KEY, HEADER_KEY } from "./McAxiosAnnotations";
 
 export default abstract class McAxios {
 	private _axios: AxiosInstance;
@@ -27,6 +27,7 @@ export default abstract class McAxios {
 			const requestBody = Reflect.getMetadata(REQUEST_KEY, proto, name);
 			const responseType = Reflect.getMetadata(RESPONSE_TYPE_KEY, proto, name);
 			const formData = Reflect.getMetadata(FORMDATA_KEY, proto, name);
+			const headerParam = Reflect.getMetadata(HEADER_KEY, proto, name);
 
 			const pathParams: { [key: string]: number } = Reflect.getMetadata(PATH_PARAMS_KEY, proto, name) || {};
 
@@ -73,12 +74,18 @@ export default abstract class McAxios {
 					const data = request !== undefined ? request.toJson() : undefined;
 					console.log(`param -> ${name} :: ${data}`);
 
+					const headers: AxiosHeaders = this.header() ?? new AxiosHeaders();
+					const header = headerParam !== undefined ? args[headerParam] : undefined;
+
+					headers.set(headerParam, header);
+
 					try {
 						const response = await this._axios
 							.request({
 								method,
 								url,
 								data,
+								headers: headers,
 							})
 							.catch((err) => {
 								throw err;

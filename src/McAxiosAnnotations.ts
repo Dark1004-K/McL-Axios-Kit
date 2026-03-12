@@ -8,6 +8,7 @@ export const PATH_PARAMS_KEY = Symbol("mc:pathParams");
 export const SUCCESS_HANDLER_KEY = Symbol("mc:successHandler");
 export const ERROR_HANDLER_KEY = Symbol("mc:errorHandler");
 export const FORMDATA_KEY = Symbol("mc:formdata");
+export const HEADER_KEY = Symbol("mc:header");
 
 const McAxiosAnnotations = {
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -47,6 +48,10 @@ const McAxiosAnnotations = {
 	// biome-ignore lint/complexity/noBannedTypes: <explanation>
 	FormData: (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
 		Reflect.defineMetadata(FORMDATA_KEY, parameterIndex, target, propertyKey);
+	},
+
+	Header: (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
+		Reflect.defineMetadata(HEADER_KEY, parameterIndex, target, propertyKey);
 	},
 
 	Path: (name: string) => {
