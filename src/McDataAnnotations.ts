@@ -173,4 +173,4 @@ export abstract class McSerializable {
 	}
 }
 
-export default McDataAnnotations;
+export default {McDataAnnotations, McSerializable};

@@ -3,7 +3,7 @@
 import McAxiosOrigin from './McAxios';
 import McAxiosManager from './McAxiosManager';
 import McAxiosAnnotations from './McAxiosAnnotations';
-import McDataAnnotations from './McDataAnnotations';
+import McDataAnnotations, { McSerializable } from './McDataAnnotations';
 import McRequest from './McRequest';
 import McResponse from './McResponse';
 
@@ -15,6 +15,7 @@ const McAxios = Object.assign(McAxiosOrigin, {
     Manager: McAxiosManager,
     AxiosAnnotations: McAxiosAnnotations,
     DataAnnotations: McDataAnnotations,
+    Serializable: McSerializable,
     Request: McRequest,
     Response: McResponse,
 });
@@ -28,6 +29,7 @@ export {
     McAxiosManager,
     McAxiosAnnotations,
     McDataAnnotations,
+    McSerializable,
     McRequest,
     McResponse
 };
