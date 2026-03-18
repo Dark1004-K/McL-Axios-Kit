@@ -6,6 +6,7 @@ import McAxiosAnnotations from './McAxiosAnnotations';
 import McDataAnnotations from './McDataAnnotations';
 import McRequest from './McRequest';
 import McResponse from './McResponse';
+import McSerializable from './McSerializable';
 
 /**
  * 2. McAxios 클래스에 다른 클래스들을 정적(static) 속성으로 결합합니다.
@@ -15,6 +16,7 @@ const McAxios = Object.assign(McAxiosOrigin, {
     Manager: McAxiosManager,
     AxiosAnnotations: McAxiosAnnotations,
     DataAnnotations: McDataAnnotations,
+    Serializable: McSerializable,
     Request: McRequest,
     Response: McResponse,
 });
@@ -28,6 +30,7 @@ export {
     McAxiosManager,
     McAxiosAnnotations,
     McDataAnnotations,
+    McSerializable,
     McRequest,
     McResponse
 };

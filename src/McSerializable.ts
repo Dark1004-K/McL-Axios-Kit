@@ -1,6 +1,6 @@
 import { SERIALIZE_FLAG } from "./McDataAnnotations";
 
-export abstract class McSerializable {
+export default abstract class McSerializable {
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	public toJson(): Record<string, any> {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
