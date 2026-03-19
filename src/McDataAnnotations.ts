@@ -7,6 +7,7 @@ export const FIELD_TYPE = Symbol("mc:fieldType");
 export const FIELD_IS_ARRAY = Symbol("mc:isArray");
 export const FIELD_PATH = Symbol("mc:fieldPath");
 export const FIELD_DEFAULT = Symbol("mc:fieldDefault");
+export const FIELD_KEYS = Symbol("mc:fieldKeys");
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const isEntity = (type: any): boolean => {
@@ -48,8 +49,8 @@ const McDataAnnotations = {
 						if (body === undefined) return;
 						console.log(`Dark Response > ${body.toString()}`);
 						const proto = Object.getPrototypeOf(this);
-						// 💡 메타데이터가 붙은 키들만 필터링
-						const names = Object.getOwnPropertyNames(this).filter((key) => Reflect.hasMetadata(FIELD_TYPE, proto, key));
+						// 💡 @Field / @ArrayField 데코레이터가 누적한 키 목록 사용
+						const names: string[] = Reflect.getMetadata(FIELD_KEYS, proto) || [];
 						for (const key of names) {
 							if (typeof key !== "string") continue;
 							const descriptor = Object.getOwnPropertyDescriptor(proto, key);
@@ -121,6 +122,9 @@ const McDataAnnotations = {
 	Field: (type: any, path?: string, defaultValue: any = undefined) => {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		return (target: any, propertyKey: string) => {
+			const keys: string[] = Reflect.getMetadata(FIELD_KEYS, target) || [];
+			keys.push(propertyKey);
+			Reflect.defineMetadata(FIELD_KEYS, keys, target);
 			// const type = Reflect.getMetadata("design:type", target, propertyKey);
 			Reflect.defineMetadata(FIELD_TYPE, type, target, propertyKey);
 			Reflect.defineMetadata(FIELD_DEFAULT, defaultValue, target, propertyKey);
@@ -131,6 +135,9 @@ const McDataAnnotations = {
 	ArrayField: (type: any, path?: string, defaultValue: any = undefined) => {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		return (target: any, propertyKey: string) => {
+			const keys: string[] = Reflect.getMetadata(FIELD_KEYS, target) || [];
+			keys.push(propertyKey);
+			Reflect.defineMetadata(FIELD_KEYS, keys, target);
 			// const type = Reflect.getMetadata("design:type", target, propertyKey);
 			Reflect.defineMetadata(FIELD_TYPE, type, target, propertyKey);
 			Reflect.defineMetadata(FIELD_IS_ARRAY, true, target, propertyKey);
