@@ -25,73 +25,76 @@ const findPath = (obj: object, path: string): any => {
 };
 
 const McDataAnnotations = {
+
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	// biome-ignore lint/suspicious/noShadowRestrictedNames: <explanation>
 	// biome-ignore lint/complexity/noBannedTypes: <explanation>
-	Entity: <T extends { new (...args: any[]): {} }>(constructor: T): T => {
-		Reflect.defineMetadata(ENTITY_FLAG, true, constructor);
-		return class extends constructor {
-			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			constructor(...args: any[]) {
-				super(...args);
+	Entity: (entityPath: string | undefined = undefined) => {
+		return <T extends { new(...args: any[]): {} }>(constructor: T): T => {
+			Reflect.defineMetadata(ENTITY_FLAG, true, constructor);
+			return class extends constructor {
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				constructor(...args: any[]) {
+					super(...args);
+					// const response = args[0];
+					let body = args[0];
+					if (this instanceof McResponse) {
+						// if (entityPath === undefined) body = args[0]?.data;
+						body = entityPath ? findPath(args[0]?.data, entityPath): args[0]?.data;
+					}
 
-				// const response = args[0];
-				let body = args[0];
-				if (this instanceof McResponse) {
-					body = args[0]?.data?.body;
-				}
+					if (body === undefined) return;
+					console.log(`Dark Response > ${body.toString()}`);
+					const proto = Object.getPrototypeOf(this);
+					// 💡 메타데이터가 붙은 키들만 필터링
+					const names = Object.getOwnPropertyNames(this).filter((key) => Reflect.hasMetadata(FIELD_TYPE, proto, key));
+					for (const key of names) {
+						if (typeof key !== "string") continue;
+						const descriptor = Object.getOwnPropertyDescriptor(proto, key);
 
-				if (body === undefined) return;
-				console.log(`Dark Response > ${body.toString()}`);
-				const proto = Object.getPrototypeOf(this);
-				// 💡 메타데이터가 붙은 키들만 필터링
-				const names = Object.getOwnPropertyNames(this).filter((key) => Reflect.hasMetadata(FIELD_TYPE, proto, key));
-				for (const key of names) {
-					if (typeof key !== "string") continue;
-					const descriptor = Object.getOwnPropertyDescriptor(proto, key);
+						const type = Reflect.getMetadata(FIELD_TYPE, proto, key);
+						const isArray = Reflect.getMetadata(FIELD_IS_ARRAY, proto, key);
+						const fieldPath = Reflect.getMetadata(FIELD_PATH, proto, key);
+						const defaultValue = Reflect.getMetadata(FIELD_DEFAULT, proto, key) || {};
+						if (!type) continue;
 
-					const type = Reflect.getMetadata(FIELD_TYPE, proto, key);
-					const isArray = Reflect.getMetadata(FIELD_IS_ARRAY, proto, key);
-					const path = Reflect.getMetadata(FIELD_PATH, proto, key);
-					const defaultValue = Reflect.getMetadata(FIELD_DEFAULT, proto, key) || {};
-					if (!type) continue;
-
-					const rawValue = path ? findPath(body, path) : body[key];
-					// console.log(`Dartk > ${key.toString()} >> ${isArray} >>> ${Array.isArray(rawValue)}`);
-					if (rawValue !== undefined && rawValue !== null) {
-						if (isArray && Array.isArray(rawValue)) {
-							let cnt = 0;
-							// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-							(this as any)[key] = rawValue.map((item: any) => {
-								return isEntity(type) ? new type(item) : type(item);
-							});
-						} else if ([String, Number, Boolean].includes(type)) {
-							// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-							(this as any)[key] = type(rawValue);
-						} else if (isEntity(type)) {
-							// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-							(this as any)[key] = new type(rawValue);
+						const rawValue = fieldPath ? findPath(body, fieldPath) : body[key];
+						// console.log(`Dartk > ${key.toString()} >> ${isArray} >>> ${Array.isArray(rawValue)}`);
+						if (rawValue !== undefined && rawValue !== null) {
+							if (isArray && Array.isArray(rawValue)) {
+								let cnt = 0;
+								// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+								(this as any)[key] = rawValue.map((item: any) => {
+									return isEntity(type) ? new type(item) : type(item);
+								});
+							} else if ([String, Number, Boolean].includes(type)) {
+								// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+								(this as any)[key] = type(rawValue);
+							} else if (isEntity(type)) {
+								// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+								(this as any)[key] = new type(rawValue);
+							} else {
+								// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+								(this as any)[key] = new type(rawValue);
+							}
 						} else {
-							// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-							(this as any)[key] = new type(rawValue);
-						}
-					} else {
-						if (isArray && Array.isArray(rawValue)) {
-							let cnt = 0;
-							// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-							(this as any)[key] = rawValue.map((item: any) => {
-								return new type(defaultValue);
-							});
-						} else {
-							// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-							(this as any)[key] = defaultValue; // 또는 null, 또는 디폴트 값
+							if (isArray && Array.isArray(rawValue)) {
+								let cnt = 0;
+								// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+								(this as any)[key] = rawValue.map((item: any) => {
+									return new type(defaultValue);
+								});
+							} else {
+								// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+								(this as any)[key] = defaultValue; // 또는 null, 또는 디폴트 값
+							}
 						}
 					}
+					// currentPrototype = Object.getPrototypeOf(currentPrototype);
+					// }
 				}
-				// currentPrototype = Object.getPrototypeOf(currentPrototype);
-				// }
-			}
-		};
+			};
+		}
 	},
 	Serialize: (jsonKey: string) => {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
