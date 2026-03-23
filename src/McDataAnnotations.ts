@@ -53,19 +53,16 @@ const McDataAnnotations = {
 						const names: string[] = Reflect.getMetadata(FIELD_KEYS, proto) || [];
 						for (const key of names) {
 							if (typeof key !== "string") continue;
-							const descriptor = Object.getOwnPropertyDescriptor(proto, key);
 
 							const type = Reflect.getMetadata(FIELD_TYPE, proto, key);
 							const isArray = Reflect.getMetadata(FIELD_IS_ARRAY, proto, key);
 							const fieldPath = Reflect.getMetadata(FIELD_PATH, proto, key);
-							const defaultValue = Reflect.getMetadata(FIELD_DEFAULT, proto, key) || {};
+							const defaultValue = Reflect.getMetadata(FIELD_DEFAULT, proto, key);
 							if (!type) continue;
 
 							const rawValue = fieldPath ? findPath(body, fieldPath) : body[key];
-							// console.log(`Dartk > ${key.toString()} >> ${isArray} >>> ${Array.isArray(rawValue)}`);
 							if (rawValue !== undefined && rawValue !== null) {
 								if (isArray && Array.isArray(rawValue)) {
-									let cnt = 0;
 									// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 									(this as any)[key] = rawValue.map((item: any) => {
 										return isEntity(type) ? new type(item) : type(item);
@@ -81,20 +78,10 @@ const McDataAnnotations = {
 									(this as any)[key] = new type(rawValue);
 								}
 							} else {
-								if (isArray && Array.isArray(rawValue)) {
-									let cnt = 0;
-									// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-									(this as any)[key] = rawValue.map((item: any) => {
-										return new type(defaultValue);
-									});
-								} else {
-									// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-									(this as any)[key] = defaultValue; // 또는 null, 또는 디폴트 값
-								}
+								// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+								(this as any)[key] = defaultValue;
 							}
 						}
-						// currentPrototype = Object.getPrototypeOf(currentPrototype);
-						// }
 					}
 				};
 			}
