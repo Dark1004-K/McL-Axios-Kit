@@ -46,22 +46,24 @@ export default abstract class McAxios {
 
 					if (method === "MULTIPART") {
 						const data = formData !== undefined ? args[formData] : undefined;
+						const apiFunc = async () => {
+							return await this._axios.request({
+								method: "POST",
+								url,
+								data,
+								headers: { "Content-Type": "multipart/form-data" },
+							});
+						};
 						try {
-							const response = await this._axios
-								.request({
-									method: "POST",
-									url,
-									data,
-									headers: { "Content-Type": "multipart/form-data" },
-								})
-								.catch((err) => {
-									throw err;
-								});
-							if (successHandler) return successHandler(response);
+							const response = await apiFunc();
+							if (successHandler) return await successHandler(response, apiFunc);
 							if (responseType) return new responseType(response);
 							return response.data;
 						} catch (reqErr) {
-							const err = errorHandler ? errorHandler(reqErr) : reqErr;
+							if (errorHandler) {
+								const result = await errorHandler(reqErr, apiFunc);
+								if (result !== undefined) return result;
+							}
 							throw reqErr;
 						}
 					}
@@ -76,28 +78,24 @@ export default abstract class McAxios {
 					const data = request !== undefined ? request.toJson() : undefined;
 					console.log(`param -> ${name} :: ${data}`);
 
-					const headers: AxiosHeaders = this.header() ?? new AxiosHeaders();
-					for (const [key, index] of Object.entries(headerParam)) {
-						const value = encodeURIComponent(args[index]);
-						headers.set(key, value);
-					}
+					const apiFunc = async () => {
+						const headers: AxiosHeaders = this.header() ?? new AxiosHeaders();
+						for (const [key, index] of Object.entries(headerParam)) {
+							headers.set(key, encodeURIComponent(args[index]));
+						}
+						return await this._axios.request({ method, url, data, headers });
+					};
 
 					try {
-						const response = await this._axios
-							.request({
-								method,
-								url,
-								data,
-								headers: headers,
-							})
-							.catch((err) => {
-								throw err;
-							});
-						if (successHandler) return successHandler(response);
+						const response = await apiFunc();
+						if (successHandler) return await successHandler(response, apiFunc);
 						if (responseType) return new responseType(response);
 						return response.data;
 					} catch (reqErr) {
-						const err = errorHandler ? errorHandler(reqErr) : reqErr;
+						if (errorHandler) {
+							const result = await errorHandler(reqErr, apiFunc);
+							if (result !== undefined) return result;
+						}
 						throw reqErr;
 					}
 				},
