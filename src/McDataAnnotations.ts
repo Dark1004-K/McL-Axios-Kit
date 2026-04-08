@@ -11,6 +11,7 @@ export const FIELD_PATH = Symbol("mc:fieldPath");
 export const FIELD_DEFAULT = Symbol("mc:fieldDefault");
 export const FIELD_KEYS = Symbol("mc:fieldKeys");
 export const FIELD_CUSTOM_FN = Symbol("mc:customFn");
+export const CUSTOM_FN_SYMBOL_MAP_KEY = Symbol("mc:customFnSymbolMap");
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export type McFieldMapper = (self: any, data: any) => any;
@@ -65,12 +66,19 @@ const McDataAnnotations = {
 							if (typeof key !== "string") continue;
 
 							// CustomField 처리
-							const customFn: McFieldMapper | undefined = Reflect.getMetadata(FIELD_CUSTOM_FN, proto, key);
+							const customFn: McFieldMapper | symbol | undefined = Reflect.getMetadata(FIELD_CUSTOM_FN, proto, key);
 							if (customFn) {
 								const fieldPath = Reflect.getMetadata(FIELD_PATH, proto, key);
 								const rawValue = fieldPath ? findPath(body, fieldPath) : body[key];
-								// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-								(this as any)[key] = customFn(this, rawValue);
+								if (typeof customFn === "symbol") {
+									const symbolMap: Map<symbol, string> = Reflect.getMetadata(CUSTOM_FN_SYMBOL_MAP_KEY, proto) || new Map();
+									const methodName = symbolMap.get(customFn);
+									// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+									if (methodName) (this as any)[key] = (this as any)[methodName](rawValue);
+								} else {
+									// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+									(this as any)[key] = customFn(this, rawValue);
+								}
 								continue;
 							}
 
@@ -167,7 +175,7 @@ const McDataAnnotations = {
 		return McDataAnnotations.Field([type], path);
 	},
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	CustomField: (fn: McFieldMapper, path?: string) => {
+	CustomField: (fn: McFieldMapper | symbol, path?: string) => {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		return (target: any, propertyKey: string) => {
 			const keys: string[] = Reflect.getMetadata(FIELD_KEYS, target) || [];
@@ -175,6 +183,15 @@ const McDataAnnotations = {
 			Reflect.defineMetadata(FIELD_KEYS, keys, target);
 			Reflect.defineMetadata(FIELD_CUSTOM_FN, fn, target, propertyKey);
 			Reflect.defineMetadata(FIELD_PATH, path, target, propertyKey);
+		};
+	},
+
+	CustomFieldMapper: (sym: symbol) => {
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		return (target: any, propertyKey: string) => {
+			const map: Map<symbol, string> = Reflect.getMetadata(CUSTOM_FN_SYMBOL_MAP_KEY, target) || new Map();
+			map.set(sym, propertyKey);
+			Reflect.defineMetadata(CUSTOM_FN_SYMBOL_MAP_KEY, map, target);
 		};
 	},
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>

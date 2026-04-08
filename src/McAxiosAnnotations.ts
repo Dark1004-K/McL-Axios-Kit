@@ -7,6 +7,7 @@ export const RESPONSE_TYPE_KEY = Symbol("mc:responseType");
 export const PATH_PARAMS_KEY = Symbol("mc:pathParams");
 export const SUCCESS_HANDLER_KEY = Symbol("mc:successHandler");
 export const ERROR_HANDLER_KEY = Symbol("mc:errorHandler");
+export const HANDLER_SYMBOL_MAP_KEY = Symbol("mc:handlerSymbolMap");
 export const FORMDATA_KEY = Symbol("mc:formdata");
 export const HEADER_KEY = Symbol("mc:header");
 
@@ -69,7 +70,7 @@ const McAxiosAnnotations = {
 	},
 
 	// biome-ignore lint/complexity/noBannedTypes: <explanation>
-	Success: (fn: Function) => {
+	Success: (fn: Function | symbol) => {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		return (target: any, propertyKey: string) => {
 			Reflect.defineMetadata(SUCCESS_HANDLER_KEY, fn, target, propertyKey);
@@ -78,10 +79,28 @@ const McAxiosAnnotations = {
 
 	// biome-ignore lint/complexity/noBannedTypes: <explanation>
 	// biome-ignore lint/suspicious/noShadowRestrictedNames: <explanation>
-	Error: (fn: Function) => {
+	Error: (fn: Function | symbol) => {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		return (target: any, propertyKey: string) => {
 			Reflect.defineMetadata(ERROR_HANDLER_KEY, fn, target, propertyKey);
+		};
+	},
+
+	SuccessHandler: (sym: symbol) => {
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		return (target: any, propertyKey: string) => {
+			const map: Map<symbol, string> = Reflect.getMetadata(HANDLER_SYMBOL_MAP_KEY, target) || new Map();
+			map.set(sym, propertyKey);
+			Reflect.defineMetadata(HANDLER_SYMBOL_MAP_KEY, map, target);
+		};
+	},
+
+	ErrorHandler: (sym: symbol) => {
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		return (target: any, propertyKey: string) => {
+			const map: Map<symbol, string> = Reflect.getMetadata(HANDLER_SYMBOL_MAP_KEY, target) || new Map();
+			map.set(sym, propertyKey);
+			Reflect.defineMetadata(HANDLER_SYMBOL_MAP_KEY, map, target);
 		};
 	},
 };

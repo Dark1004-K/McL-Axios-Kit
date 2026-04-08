@@ -1,6 +1,6 @@
 {
   "name": "mcl-axios-kit",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "McL에서 Axios를 활용해 API를 보다 효율적이고 깔끔하게 활용할 수 있도록 구현된 Kit",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -20,7 +20,9 @@
     "prepublishOnly": "npm run build"
   },
   "keywords": [
-    "axios", "typescript", "mcl"
+    "axios",
+    "typescript",
+    "mcl"
   ],
   "author": "IDEa Team",
   "license": "Apache-2.0",

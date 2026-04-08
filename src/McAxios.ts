@@ -1,6 +1,6 @@
 import axios, { AxiosHeaders, type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from "axios";
 import McRequest from "./McRequest";
-import McAxiosAnnotations, { ERROR_HANDLER_KEY, METHOD_META_KEY, PATH_PARAMS_KEY, REQUEST_KEY, RESPONSE_TYPE_KEY, SUCCESS_HANDLER_KEY, FORMDATA_KEY, HEADER_KEY } from "./McAxiosAnnotations";
+import McAxiosAnnotations, { ERROR_HANDLER_KEY, HANDLER_SYMBOL_MAP_KEY, METHOD_META_KEY, PATH_PARAMS_KEY, REQUEST_KEY, RESPONSE_TYPE_KEY, SUCCESS_HANDLER_KEY, FORMDATA_KEY, HEADER_KEY } from "./McAxiosAnnotations";
 
 export default abstract class McAxios {
 	private _axios: AxiosInstance;
@@ -33,6 +33,22 @@ export default abstract class McAxios {
 			const pathParams: { [key: string]: number } = Reflect.getMetadata(PATH_PARAMS_KEY, proto, name) || {};
 			const headerParam: { [key: string]: number } = Reflect.getMetadata(HEADER_KEY, proto, name) || {};
 
+			const symbolMap: Map<symbol, string> = Reflect.getMetadata(HANDLER_SYMBOL_MAP_KEY, proto) || new Map();
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			const resolveHandler = (handler: Function | symbol | undefined): (((...args: any[]) => Promise<any>) | undefined) => {
+				if (typeof handler === "symbol") {
+					const methodName = symbolMap.get(handler);
+					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+					if (methodName) return (...args: any[]) => (this as any)[methodName](...args);
+					return undefined;
+				}
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				if (typeof handler === "function") return (...args: any[]) => (handler as Function).call(this, ...args);
+				return undefined;
+			};
+			const resolvedSuccess = resolveHandler(successHandler);
+			const resolvedError = resolveHandler(errorHandler);
+
 			Object.defineProperty(this, name, {
 				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				value: async (...args: any[]) => {
@@ -56,12 +72,12 @@ export default abstract class McAxios {
 						};
 						try {
 							const response = await apiFunc();
-							if (successHandler) return await successHandler(response, apiFunc);
+							if (resolvedSuccess) return await resolvedSuccess(response, apiFunc);
 							if (responseType) return new responseType(response);
 							return response.data;
 						} catch (reqErr) {
-							if (errorHandler) {
-								const result = await errorHandler(reqErr, apiFunc);
+							if (resolvedError) {
+								const result = await resolvedError(reqErr, apiFunc);
 								if (result !== undefined) return result;
 							}
 							throw reqErr;
@@ -72,7 +88,7 @@ export default abstract class McAxios {
 
 					if (request !== undefined && request instanceof McRequest === false) {
 						const err = new Error("Request 형식이 잘못 되었습니다.");
-						errorHandler ? errorHandler(err) : err;
+						if (resolvedError) await resolvedError(err);
 						throw err;
 					}
 					const data = request !== undefined ? request.toJson() : undefined;
@@ -88,12 +104,12 @@ export default abstract class McAxios {
 
 					try {
 						const response = await apiFunc();
-						if (successHandler) return await successHandler(response, apiFunc);
+						if (resolvedSuccess) return await resolvedSuccess(response, apiFunc);
 						if (responseType) return new responseType(response);
 						return response.data;
 					} catch (reqErr) {
-						if (errorHandler) {
-							const result = await errorHandler(reqErr, apiFunc);
+						if (resolvedError) {
+							const result = await resolvedError(reqErr, apiFunc);
 							if (result !== undefined) return result;
 						}
 						throw reqErr;
