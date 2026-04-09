@@ -72,7 +72,7 @@ export default abstract class McAxios {
 						};
 						try {
 							const response = await apiFunc();
-							if (resolvedSuccess) return await resolvedSuccess(response, apiFunc);
+							if (resolvedSuccess) return new responseType(await resolvedSuccess(response, apiFunc));
 							if (responseType) return new responseType(response);
 							return response.data;
 						} catch (reqErr) {
@@ -104,7 +104,7 @@ export default abstract class McAxios {
 
 					try {
 						const response = await apiFunc();
-						if (resolvedSuccess) return await resolvedSuccess(response, apiFunc);
+						if (resolvedSuccess) return new responseType(await resolvedSuccess(response, apiFunc));
 						if (responseType) return new responseType(response);
 						return response.data;
 					} catch (reqErr) {
