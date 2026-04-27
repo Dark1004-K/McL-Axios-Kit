@@ -9,6 +9,14 @@ export default abstract class McAxios {
 		this._axios = axios.create();
 		this.bindEndpoints();
 	}
+
+	protected stub(): never {
+		const stack = new Error().stack?.split('\n');
+		const callerLine = stack?.[2] ?? '';
+		const methodName = callerLine.match(/at (?:\w+\.)?(\w+)\s/)?.[1] ?? 'unknown';
+		throw new Error(`[McAxios] '${methodName}' 메서드가 바인딩되지 않았습니다.`);
+	}
+
 	protected abstract header(): AxiosHeaders | undefined;
 	private bindEndpoints() {
 		const proto = Object.getPrototypeOf(this);
