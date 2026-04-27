@@ -14,7 +14,7 @@ export default abstract class McAxios {
 		const stack = new Error().stack?.split('\n');
 		const callerLine = stack?.[2] ?? '';
 		const methodName = callerLine.match(/at (?:\w+\.)?(\w+)\s/)?.[1] ?? 'unknown';
-		throw new Error(`[McAxios] '${methodName}' 메서드가 바인딩되지 않았습니다.`);
+		throw new Error(`[McAxios] '${methodName}' is not bound. Make sure your class properly extends McAxios.`);
 	}
 
 	protected abstract header(): AxiosHeaders | undefined;
