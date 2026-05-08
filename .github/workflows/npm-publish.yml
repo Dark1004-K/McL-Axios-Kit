@@ -1,4 +1,4 @@
-name: Publish McL-Axios-Kit to npm
+name: Publish axios-kit-ts to npm
 
 on:
   push:
