@@ -38,7 +38,6 @@ const createKeyedParamDecorator = (metaKey: symbol) => {
 	};
 };
 
-// HTTP 메서드 데코레이터 팩토리
 const createDecorator = (method: string, path: string, type: new (res: any) => any) => {
 	return (target: any, propertyKey: string) => {
 		Reflect.defineMetadata(METHOD_META_KEY, { method, path }, target, propertyKey);
@@ -46,21 +45,18 @@ const createDecorator = (method: string, path: string, type: new (res: any) => a
 	};
 };
 
-// 파라미터 인덱스를 단순 저장하는 파라미터 데코레이터 팩토리
 const createIndexParamDecorator = (metaKey: symbol) => {
 	return (target: Object, propertyKey: string | symbol, parameterIndex: number) => {
 		Reflect.defineMetadata(metaKey, parameterIndex, target, propertyKey);
 	};
 };
 
-// fn | symbol을 메서드에 저장하는 메서드 데코레이터 팩토리
 const createHandlerDecorator = (metaKey: symbol) => {
 	return (fn: Function | symbol) => (target: any, propertyKey: string) => {
 		Reflect.defineMetadata(metaKey, fn, target, propertyKey);
 	};
 };
 
-// Map<symbol, methodName>을 누적 저장하는 메서드 데코레이터 팩토리
 const createSymbolMapDecorator = (mapKey: symbol) => {
 	return (sym: symbol) => (target: any, propertyKey: string) => {
 		const map: Map<symbol, string> = Reflect.getMetadata(mapKey, target) || new Map();
@@ -69,21 +65,21 @@ const createSymbolMapDecorator = (mapKey: symbol) => {
 	};
 };
 
-const McAxiosAnnotations = {
+const McAxiosDecorators = {
 	GET: (url: string, type: new (res: any) => any): ((target: any, propertyKey: string) => void) => createDecorator("GET", url, type),
 	POST: (url: string, type: new (res: any) => any): ((target: any, propertyKey: string) => void) => createDecorator("POST", url, type),
 	PUT: (url: string, type: new (res: any) => any): ((target: any, propertyKey: string) => void) => createDecorator("PUT", url, type),
 	DELETE: (url: string, type: new (res: any) => any): ((target: any, propertyKey: string) => void) => createDecorator("DELETE", url, type),
 	MULTIPART: (url: string, type: new (res: any) => any): ((target: any, propertyKey: string) => void) => createDecorator("MULTIPART", url, type),
 	PATCH: (url: string, type: new (res: any) => any): ((target: any, propertyKey: string) => void) => createDecorator("PATCH", url, type),
-	Request: (target: Object, propertyKey: string | symbol, parameterIndex: number): void => createIndexParamDecorator(REQUEST_KEY)(target, propertyKey, parameterIndex),
-	FormData: (target: Object, propertyKey: string | symbol, parameterIndex: number): void => createIndexParamDecorator(FORMDATA_KEY)(target, propertyKey, parameterIndex),
-	Header: createKeyedParamDecorator(HEADER_KEY) as (targetOrKey?: Object | string, propertyKey?: string | symbol, parameterIndex?: number) => ParameterDecorator | undefined,
-	Path: createKeyedParamDecorator(PATH_PARAMS_KEY) as (targetOrKey?: Object | string, propertyKey?: string | symbol, parameterIndex?: number) => ParameterDecorator | undefined,
-	Success: (fn: Function | symbol): ((target: any, propertyKey: string) => void) => createHandlerDecorator(SUCCESS_HANDLER_KEY)(fn),
-	Error: (fn: Function | symbol): ((target: any, propertyKey: string) => void) => createHandlerDecorator(ERROR_HANDLER_KEY)(fn),
-	SuccessHandler: (sym: symbol): ((target: any, propertyKey: string) => void) => createSymbolMapDecorator(HANDLER_SYMBOL_MAP_KEY)(sym),
-	ErrorHandler: (sym: symbol): ((target: any, propertyKey: string) => void) => createSymbolMapDecorator(HANDLER_SYMBOL_MAP_KEY)(sym),
+	REQUEST: (target: Object, propertyKey: string | symbol, parameterIndex: number): void => createIndexParamDecorator(REQUEST_KEY)(target, propertyKey, parameterIndex),
+	FORM_DATA: (target: Object, propertyKey: string | symbol, parameterIndex: number): void => createIndexParamDecorator(FORMDATA_KEY)(target, propertyKey, parameterIndex),
+	HEADER: createKeyedParamDecorator(HEADER_KEY) as (targetOrKey?: Object | string, propertyKey?: string | symbol, parameterIndex?: number) => ParameterDecorator | undefined,
+	PATH: createKeyedParamDecorator(PATH_PARAMS_KEY) as (targetOrKey?: Object | string, propertyKey?: string | symbol, parameterIndex?: number) => ParameterDecorator | undefined,
+	SUCCESS: (fn: Function | symbol): ((target: any, propertyKey: string) => void) => createHandlerDecorator(SUCCESS_HANDLER_KEY)(fn),
+	ERROR: (fn: Function | symbol): ((target: any, propertyKey: string) => void) => createHandlerDecorator(ERROR_HANDLER_KEY)(fn),
+	SUCCESS_HANDLER: (sym: symbol): ((target: any, propertyKey: string) => void) => createSymbolMapDecorator(HANDLER_SYMBOL_MAP_KEY)(sym),
+	ERROR_HANDLER: (sym: symbol): ((target: any, propertyKey: string) => void) => createSymbolMapDecorator(HANDLER_SYMBOL_MAP_KEY)(sym),
 };
 
-export default McAxiosAnnotations;
+export default McAxiosDecorators;

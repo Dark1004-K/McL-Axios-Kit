@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import McResponse from "./McResponse";
 import { isFunction, isObject, isString, isSymbol } from "./McTypeUtils";
 
 export const ENTITY_FLAG = Symbol("mc:isEntity");
@@ -15,6 +14,37 @@ export const FIELD_CUSTOM_FN = Symbol("mc:customFn");
 export const CUSTOM_FN_SYMBOL_MAP_KEY = Symbol("mc:customFnSymbolMap");
 
 export type McFieldMapper = (self: any, data: any) => any;
+
+export interface IMcSerializable {
+	toJson(): Record<string, any>;
+	toString(): string;
+}
+
+// ─── Serializable base class ──────────────────────────────────────────────────
+
+const serializeValue = (value: any): any => {
+	if (isFunction(value?.toJson)) return value.toJson();
+	return value;
+};
+
+export class McSerializable implements IMcSerializable {
+	public toJson(): Record<string, any> {
+		const result: Record<string, any> = {};
+		const properties = Reflect.getMetadata(SERIALIZE_FLAG, this.constructor.prototype);
+		if (!properties) return result;
+		for (const prop of properties) {
+			const value = (this as any)[prop.propertyKey];
+			result[prop.jsonKey] = Array.isArray(value) ? value.map(serializeValue) : serializeValue(value);
+		}
+		return result;
+	}
+
+	public toString(): string {
+		return JSON.stringify(this.toJson());
+	}
+}
+
+// ─── Internal helpers ─────────────────────────────────────────────────────────
 
 const isEntity = (type: any): boolean => !!Reflect.getMetadata(ENTITY_FLAG, type);
 
@@ -32,14 +62,40 @@ const registerFieldKey = (target: object, propertyKey: string): void => {
 	Reflect.defineMetadata(FIELD_KEYS, keys, target);
 };
 
-const createSymbolMapDecorator = (mapKey: symbol) => {
-	return (sym: symbol): ((target: any, propertyKey: string) => void) =>
+const resolveArrayType = (type: any): [actualType: any, isArray: boolean] =>
+	Array.isArray(type) ? [type[0], true] : [type, false];
+
+const createEntityWrapper = (path: string | undefined) =>
+	<T extends { new (...args: any[]): {} }>(constructor: T): T => {
+		Reflect.defineMetadata(ENTITY_FLAG, true, constructor);
+		return class extends constructor {
+			constructor(...args: any[]) {
+				super(...args);
+				const raw = isString(args[0]) ? JSON.parse(args[0]) : args[0];
+				const source = raw?.data !== undefined ? raw.data : raw;
+				const body = path ? findPath(source, path) ?? raw : source;
+				if (body === undefined) return;
+				console.log(`Dark Response > ${body.toString()}`);
+				mapBodyToInstance(this, body);
+			}
+		};
+	};
+
+const createFieldDecorator = (actualType: any, isArray: boolean, metadata: [symbol, any][]) =>
+	(target: any, propertyKey: string): void => {
+		registerFieldKey(target, propertyKey);
+		Reflect.defineMetadata(FIELD_TYPE, actualType, target, propertyKey);
+		Reflect.defineMetadata(FIELD_IS_ARRAY, isArray, target, propertyKey);
+		for (const [key, val] of metadata) Reflect.defineMetadata(key, val, target, propertyKey);
+	};
+
+const createSymbolMapDecorator = (mapKey: symbol) =>
+	(sym: symbol): ((target: any, propertyKey: string) => void) =>
 		(target: any, propertyKey: string) => {
 			const map: Map<symbol, string> = Reflect.getMetadata(mapKey, target) || new Map();
 			map.set(sym, propertyKey);
 			Reflect.defineMetadata(mapKey, map, target);
 		};
-};
 
 const applyFieldValue = (instance: any, key: string, type: any, rawValue: any, isArray: boolean, isMap: boolean, mapKeyType: any): void => {
 	if (isMap && isObject(rawValue)) {
@@ -100,62 +156,41 @@ const mapBodyToInstance = (instance: any, body: any): void => {
 	}
 };
 
-const McDataAnnotations = {
-	Entity: (entityPath?: string | (new (...args: any[]) => {})): any => {
-		const applyDecorator = (path: string | undefined) => {
-			return <T extends { new (...args: any[]): {} }>(constructor: T): T => {
-				Reflect.defineMetadata(ENTITY_FLAG, true, constructor);
-				return class extends constructor {
-					constructor(...args: any[]) {
-						super(...args);
-						let body = isString(args[0]) ? JSON.parse(args[0]) : args[0];
-						if (this instanceof McResponse) {
-							body = path ? findPath(args[0]?.data, path) : args[0]?.data;
-						}
-						if (body === undefined) return;
-						console.log(`Dark Response > ${body.toString()}`);
-						mapBodyToInstance(this, body);
-					}
-				};
-			};
-		};
+// ─── McEntity ─────────────────────────────────────────────────────────────────
 
-		if (isFunction(entityPath)) {
-			return applyDecorator(undefined)(entityPath as any) as any;
-		}
-		return applyDecorator(entityPath);
+const McEntity = {
+	Serializable: McSerializable,
+
+	ENTITY: (entityPath?: string | (new (...args: any[]) => {})): any => {
+		if (isFunction(entityPath)) return createEntityWrapper(undefined)(entityPath as any);
+		return createEntityWrapper(entityPath);
 	},
 
-	Serialize:
-		(jsonKey: string): ((target: any, propertyKey: string) => void) =>
-		(target: any, propertyKey: string) => {
+	SERIALIZE: (jsonKeyOrTarget: string | object, propertyKey?: string): any => {
+		const register = (target: any, propKey: string, jsonKey: string): void => {
 			const properties: { propertyKey: string; jsonKey: string }[] = Reflect.getMetadata(SERIALIZE_FLAG, target) || [];
-			properties.push({ propertyKey, jsonKey });
+			properties.push({ propertyKey: propKey, jsonKey });
 			Reflect.defineMetadata(SERIALIZE_FLAG, properties, target);
-		},
-
-	Field: (type: any, path?: string, defaultValue: any = undefined): ((target: any, propertyKey: string) => void) => {
-		validateArrayType(type, "Field");
-		const isValueArray = Array.isArray(type);
-		const actualType = isValueArray ? type[0] : type;
-		return (target: any, propertyKey: string) => {
-			registerFieldKey(target, propertyKey);
-			Reflect.defineMetadata(FIELD_TYPE, actualType, target, propertyKey);
-			Reflect.defineMetadata(FIELD_IS_ARRAY, isValueArray, target, propertyKey);
-			Reflect.defineMetadata(FIELD_DEFAULT, defaultValue, target, propertyKey);
-			Reflect.defineMetadata(FIELD_PATH, path, target, propertyKey);
 		};
+		if (isString(jsonKeyOrTarget)) {
+			return (target: any, propKey: string) => register(target, propKey, jsonKeyOrTarget);
+		}
+		register(jsonKeyOrTarget as any, propertyKey!, propertyKey!);
 	},
 
-	/**
-	 * @deprecated Use @Field([Type]) instead.
-	 */
-	ArrayField: (type: any, path?: string) => {
-		console.warn(`[@ArrayField] deprecated: @Field([${type?.name ?? "Type"}], '${path ?? ""}') 으로 변경해 주세요.`);
-		return McDataAnnotations.Field([type], path);
+	FIELD: (type: any, path?: string, defaultValue: any = undefined): ((target: any, propertyKey: string) => void) => {
+		validateArrayType(type, "FIELD");
+		const [actualType, isArray] = resolveArrayType(type);
+		return createFieldDecorator(actualType, isArray, [[FIELD_PATH, path], [FIELD_DEFAULT, defaultValue]]);
 	},
 
-	CustomField:
+	/** @deprecated Use @FIELD([Type]) instead. */
+	ARRAY_FIELD: (type: any, path?: string) => {
+		console.warn(`[@ARRAY_FIELD] deprecated: @FIELD([${type?.name ?? "Type"}], '${path ?? ""}') 으로 변경해 주세요.`);
+		return McEntity.FIELD([type], path);
+	},
+
+	CUSTOM_FIELD:
 		(fn: McFieldMapper | symbol, path?: string): ((target: any, propertyKey: string) => void) =>
 		(target: any, propertyKey: string) => {
 			registerFieldKey(target, propertyKey);
@@ -163,21 +198,13 @@ const McDataAnnotations = {
 			Reflect.defineMetadata(FIELD_PATH, path, target, propertyKey);
 		},
 
-	CustomFieldMapper: createSymbolMapDecorator(CUSTOM_FN_SYMBOL_MAP_KEY),
+	CUSTOM_FIELD_MAPPER: createSymbolMapDecorator(CUSTOM_FN_SYMBOL_MAP_KEY),
 
-	MapField: (type: any, path?: string, keyType: any = String): ((target: any, propertyKey: string) => void) => {
-		validateArrayType(type, "MapField");
-		const isValueArray = Array.isArray(type);
-		const actualType = isValueArray ? type[0] : type;
-		return (target: any, propertyKey: string) => {
-			registerFieldKey(target, propertyKey);
-			Reflect.defineMetadata(FIELD_TYPE, actualType, target, propertyKey);
-			Reflect.defineMetadata(FIELD_IS_ARRAY, isValueArray, target, propertyKey);
-			Reflect.defineMetadata(FIELD_IS_MAP, true, target, propertyKey);
-			Reflect.defineMetadata(FIELD_MAP_KEY, keyType, target, propertyKey);
-			Reflect.defineMetadata(FIELD_PATH, path, target, propertyKey);
-		};
+	MAP_FIELD: (type: any, path?: string, keyType: any = String): ((target: any, propertyKey: string) => void) => {
+		validateArrayType(type, "MAP_FIELD");
+		const [actualType, isArray] = resolveArrayType(type);
+		return createFieldDecorator(actualType, isArray, [[FIELD_PATH, path], [FIELD_IS_MAP, true], [FIELD_MAP_KEY, keyType]]);
 	},
 };
 
-export default McDataAnnotations;
+export default McEntity;
