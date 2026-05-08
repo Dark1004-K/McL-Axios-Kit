@@ -1,7 +1,7 @@
 {
-  "name": "mcl-axios-kit",
-  "version": "0.1.7",
-  "description": "McL에서 Axios를 활용해 API를 보다 효율적이고 깔끔하게 활용할 수 있도록 구현된 Kit",
+  "name": "@moca-labs/axios-kit-ts",
+  "version": "0.2.0",
+  "description": "Axios 기반 TypeScript API 클라이언트 Kit - 데코레이터 기반 HTTP 요청 관리",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,7 +22,9 @@
   "keywords": [
     "axios",
     "typescript",
-    "mcl"
+    "decorator",
+    "http-client",
+    "moca-libs"
   ],
   "author": "IDEa Team",
   "license": "Apache-2.0",
@@ -44,6 +46,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dark1004-k/mcl-axios-kit.git"
+    "url": "git+https://github.com/moca-labs/Axios-Kit-ts.git"
   }
 }
