@@ -1,7 +1,7 @@
 import axios, { AxiosHeaders, type AxiosInstance } from "axios";
 import { ERROR_HANDLER_KEY, FORMDATA_KEY, HANDLER_SYMBOL_MAP_KEY, HEADER_KEY, METHOD_META_KEY, PATH_PARAMS_KEY, REQUEST_KEY, RESPONSE_TYPE_KEY, SUCCESS_HANDLER_KEY } from "./McAxiosDecorators";
 import McRequest from "./McRequest";
-import { isFunction, isSymbol } from "./McTypeUtils";
+import { isFunction, isSymbol } from "@moca-labs/entity-kit-ts";
 
 export default abstract class McAxios {
 	private _axios: AxiosInstance;

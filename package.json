@@ -29,6 +29,7 @@
   "author": "IDEa Team",
   "license": "Apache-2.0",
   "dependencies": {
+    "@moca-labs/entity-kit-ts": "^0.1.0",
     "reflect-metadata": "^0.2.2"
   },
   "peerDependencies": {

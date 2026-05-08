@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { isObject, isString } from "./McTypeUtils";
+import { isObject, isString } from "@moca-labs/entity-kit-ts";
 
 export const API_META_KEY = Symbol("mc:api");
 export const METHOD_META_KEY = Symbol("mc:method");
