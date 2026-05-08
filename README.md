@@ -3,10 +3,11 @@
 Axios 기반 TypeScript API 클라이언트 라이브러리입니다.  
 데코레이터로 HTTP 메서드, 파라미터, 응답 핸들러를 선언적으로 정의합니다.
 
-**의존성**
-- `@moca-labs/entity-kit-ts` ^0.1.0
-- `reflect-metadata` ^0.2.2
-- peer: `axios` ^1.15.0
+## 설치
+
+```bash
+npm install @moca-labs/axios-kit-ts @moca-labs/entity-kit-ts reflect-metadata axios
+```
 
 tsconfig.json에 다음 옵션이 필요합니다.
 
