@@ -3,12 +3,12 @@ import type McAxios from "./McAxios";
 export default class McAxiosManager {
 	private static _axios: McAxios[] = [];
 
-	private constructor() { }
-	
+	private constructor() {}
+
 	public static createMcAxios<T extends McAxios>(api: T): T {
 		McAxiosManager.add(api);
 		return api;
-	};
+	}
 
 	public static set(servers: McAxios[]) {
 		McAxiosManager.clear();
@@ -19,7 +19,6 @@ export default class McAxiosManager {
 		McAxiosManager._axios.push(axios);
 	}
 
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	public static get<T extends McAxios>(type: abstract new (...args: any[]) => T): T {
 		const result = McAxiosManager._axios.find((axios) => axios instanceof type);
 		if (result) return result as T;

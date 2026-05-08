@@ -1,6 +1,6 @@
 {
   "name": "mcl-axios-kit",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "McL에서 Axios를 활용해 API를 보다 효율적이고 깔끔하게 활용할 수 있도록 구현된 Kit",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -33,9 +33,10 @@
     "axios": "^1.15.0"
   },
   "devDependencies": {
-    "axios": "^1.15.0",
+    "@biomejs/biome": "^2.4.14",
     "@types/node": "^25.2.0",
-    "typescript": "^5.9.3"
+    "axios": "^1.15.0",
+    "typescript": "^6.0.3"
   },
   "publishConfig": {
     "access": "public",

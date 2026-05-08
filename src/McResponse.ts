@@ -1,5 +1,4 @@
-import type { AxiosResponseHeaders, RawAxiosResponseHeaders } from "axios";
-import type { AxiosResponse } from "axios";
+import type { AxiosResponse, AxiosResponseHeaders, RawAxiosResponseHeaders } from "axios";
 
 export default abstract class McResponse {
 	private readonly _headers: RawAxiosResponseHeaders | AxiosResponseHeaders;
