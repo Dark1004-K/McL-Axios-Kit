@@ -6,7 +6,7 @@ Axios 기반 TypeScript API 클라이언트 라이브러리입니다.
 ## 설치
 
 ```bash
-npm install @moca-labs/axios-kit-ts @moca-labs/entity-kit-ts reflect-metadata axios
+npm install @moca-labs/axios-kit-ts axios
 ```
 
 tsconfig.json에 다음 옵션이 필요합니다.
@@ -27,12 +27,6 @@ tsconfig.json에 다음 옵션이 필요합니다.
 ```ts
 import McAxios from "@moca-labs/axios-kit-ts";
 import { McEntity } from "@moca-labs/axios-kit-ts";
-```
-
-엔트리포인트에 `reflect-metadata`를 한 번 import해야 합니다.
-
-```ts
-import "reflect-metadata";
 ```
 
 ---
@@ -128,7 +122,6 @@ private async handleError(error: any, retry: () => Promise<any>) {
 ## 예제
 
 ```ts
-import "reflect-metadata";
 import McAxios from "@moca-labs/axios-kit-ts";
 import { McEntity } from "@moca-labs/axios-kit-ts";
 import { AxiosHeaders } from "axios";
