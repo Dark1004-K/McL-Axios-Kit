@@ -101,7 +101,7 @@ export default abstract class McAxios {
 			const apiFunc = async () => {
 				const headers: AxiosHeaders = this.header() ?? new AxiosHeaders();
 				for (const [key, index] of Object.entries(headerParam)) {
-					headers.set(key, encodeURIComponent(args[index]));
+					headers.set(key, args[index]);
 				}
 				return this._axios.request({ method, url, data, headers });
 			};
