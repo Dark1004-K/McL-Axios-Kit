@@ -1,6 +1,6 @@
 {
   "name": "@moca-labs/axios-kit-ts",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Axios 기반 TypeScript API 클라이언트 Kit - 데코레이터 기반 HTTP 요청 관리",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -29,10 +29,10 @@
   "author": "IDEa Team",
   "license": "Apache-2.0",
   "dependencies": {
-    "@moca-labs/entity-kit-ts": "^0.1.0",
     "reflect-metadata": "^0.2.2"
   },
   "peerDependencies": {
+    "@moca-labs/entity-kit-ts": ">=0.2.0",
     "axios": "^1.15.0"
   },
   "devDependencies": {
